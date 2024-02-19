@@ -58,8 +58,66 @@ app.post("/articles", function(req,res){
     })
 
     newArticle.save();
+    res.send("Save successful");
 });
 
+app.delete("/articles", async function(req,res){
+    try {
+        await Article.deleteMany();
+        res.send("Delete successful");
+    }catch(error) {
+        console.error("Error while deleting: ",error);
+    }
+})
+
+app.get("/articles/:articleTitle", async function(req,res){
+    try {
+        const articleFound = await Article.findOne({title: req.params.articleTitle});
+        if(articleFound) {
+            res.send(articleFound.content);
+        }
+        else{
+            res.status(404).send("Article not found");
+        }
+    } catch(error) {
+        console.error("Error: ",error);
+    }
+});
+
+app.put("/articles/:articleTitle", async function(req,res){
+    try {
+        await Article.updateOne(
+            {title: req.params.articleTitle},
+            {title: req.body.title, content: req.body.content },
+            {overwrite: true});
+        res.send("Update successful");    
+    } catch(error) {
+        console.error("Error while update: ",error);
+    }
+});
+
+app.patch("/articles/:articleTitle", async function(req,res){
+    try {
+        await Article.updateOne(
+            {title: req.params.articleTitle},
+            {$set: {content: req.body.content}}
+        )
+        res.send("Patch request successful");
+    } catch(error) {
+        console.error("Error while patching: ",error);
+    }
+});
+
+app.delete("/articles/:articleTitle", async function(req,res){
+    try {
+        await Article.deleteOne({title: req.params.articleTitle});
+        res.send("delete successful");
+    } catch(error) {
+        console.error("Error while deleting: ",error);
+    }
+    
+
+});
 
 app.listen(3000, function(){
     console.log("Server started");
